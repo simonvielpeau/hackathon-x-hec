@@ -73,18 +73,18 @@ export function ViewGroupes({ flat, verbatims }: ViewGroupesProps) {
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight text-white">
-          Groupes — Problèmes à traiter
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Irritants à traiter
         </h1>
-        <p className="mt-1 text-zinc-500">
-          Sélectionnez un groupe puis un tag pour explorer les avis.
+        <p className="mt-1 text-slate-600">
+          Sélectionnez un groupe puis un tag pour explorer les avis clients.
         </p>
       </header>
 
       <div className="grid grid-cols-3 gap-4">
         {/* Colonne 1 : Groupes */}
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
             Groupes
           </h2>
           <div className="max-h-[calc(100vh-280px)] space-y-1 overflow-y-auto overflow-x-auto">
@@ -98,15 +98,15 @@ export function ViewGroupes({ flat, verbatims }: ViewGroupesProps) {
                   style={{ width: `${g.widthPercent}%` }}
                   className={`absolute left-0 top-0 bottom-0 rounded-lg ${
                     selectedGroup === g.group
-                      ? 'bg-rose-500/25 ring-1 ring-rose-500/40'
-                      : 'bg-white/10'
+                      ? 'bg-[#0066FF]/20 ring-1 ring-[#0066FF]/40'
+                      : 'bg-slate-100'
                   }`}
                 />
                 <div className="relative z-10 w-full px-3 py-2.5 text-sm">
-                  <span className={selectedGroup === g.group ? 'font-medium text-rose-400' : 'font-medium text-zinc-300'}>
+                  <span className={selectedGroup === g.group ? 'font-medium text-[#0066FF]' : 'font-medium text-slate-700'}>
                     {g.group}
                   </span>
-                  <span className="ml-2 text-zinc-500">({g.irritants.toLocaleString()})</span>
+                  <span className="ml-2 text-slate-500">({g.irritants.toLocaleString()})</span>
                 </div>
               </button>
             ))}
@@ -114,12 +114,12 @@ export function ViewGroupes({ flat, verbatims }: ViewGroupesProps) {
         </div>
 
         {/* Colonne 2 : Tags (vide si aucun groupe) */}
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
             Tags
           </h2>
           {!selectedGroup ? (
-            <p className="text-sm text-zinc-600">Sélectionnez un groupe</p>
+            <p className="text-sm text-slate-500">Sélectionnez un groupe</p>
           ) : (
             <div className="max-h-[calc(100vh-280px)] space-y-1 overflow-y-auto overflow-x-auto">
               {tagsInGroup.map((t) => (
@@ -132,15 +132,15 @@ export function ViewGroupes({ flat, verbatims }: ViewGroupesProps) {
                     style={{ width: `${t.widthPercent}%` }}
                     className={`absolute left-0 top-0 bottom-0 rounded-lg ${
                       selectedTag === t.tag
-                        ? 'bg-rose-500/25 ring-1 ring-rose-500/40'
-                        : 'bg-white/10'
+                        ? 'bg-[#0066FF]/20 ring-1 ring-[#0066FF]/40'
+                        : 'bg-slate-100'
                     }`}
                   />
                   <div className="relative z-10 w-full px-3 py-2.5 text-sm">
-                    <span className={selectedTag === t.tag ? 'font-medium text-rose-400' : 'font-medium text-zinc-300'}>
+                    <span className={selectedTag === t.tag ? 'font-medium text-[#0066FF]' : 'font-medium text-slate-700'}>
                       {t.tag}
                     </span>
-                    <span className="ml-2 text-zinc-500">({t.irritants.toLocaleString()})</span>
+                    <span className="ml-2 text-slate-500">({t.irritants.toLocaleString()})</span>
                   </div>
                 </button>
               ))}
@@ -149,25 +149,25 @@ export function ViewGroupes({ flat, verbatims }: ViewGroupesProps) {
         </div>
 
         {/* Colonne 3 : Avis (vide si aucun tag) */}
-        <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-zinc-500">
-            Avis
+        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Avis clients
           </h2>
           {!selectedTag ? (
-            <p className="text-sm text-zinc-600">Sélectionnez un tag</p>
+            <p className="text-sm text-slate-500">Sélectionnez un tag</p>
           ) : (
             <div className="max-h-[calc(100vh-280px)] space-y-2 overflow-y-auto">
               {verbatimsForTag.map((v, i) => (
                 <div
                   key={i}
-                  className="rounded-lg border border-white/5 bg-white/[0.02] px-3 py-2.5"
+                  className="rounded-lg border border-slate-100 bg-slate-50/50 px-3 py-2.5"
                 >
-                  <p className="text-sm text-white">{v.verbatim}</p>
-                  <p className="mt-1 text-xs text-indigo-400">Poids : {v.weight.toLocaleString()}</p>
+                  <p className="text-sm text-slate-800">{v.verbatim}</p>
+                  <p className="mt-1 text-xs text-[#0066FF]">Poids : {v.weight.toLocaleString()}</p>
                 </div>
               ))}
               {verbatimsForTag.length === 0 && (
-                <p className="text-sm text-zinc-600">Aucun avis pour ce tag</p>
+                <p className="text-sm text-slate-500">Aucun avis pour ce tag</p>
               )}
             </div>
           )}

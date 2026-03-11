@@ -10,10 +10,10 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
-          <p className="text-zinc-500">Chargement des données...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#0066FF] border-t-transparent" />
+          <p className="text-slate-600">Chargement des données...</p>
         </div>
       </div>
     )
@@ -21,8 +21,8 @@ function App() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 px-8 py-6 text-rose-400">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-8 py-6 text-red-700">
           Erreur : {error}
         </div>
       </div>
@@ -30,7 +30,7 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 overflow-auto p-8">
         {activeTab === 'groupes' && <ViewGroupes flat={flat} verbatims={verbatims} />}

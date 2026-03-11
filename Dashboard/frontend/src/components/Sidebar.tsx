@@ -12,8 +12,14 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   ]
 
   return (
-    <aside className="w-64 shrink-0 border-r border-white/5 bg-black/20 p-4">
-      <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-zinc-500">
+    <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200 bg-white p-4">
+      <div className="mb-6">
+        <span className="text-xl font-bold text-[#0066FF]">Blumana</span>
+        <p className="mt-0.5 text-xs text-slate-500">
+          Agents IA experts de vos parcours clients
+        </p>
+      </div>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
         Navigation
       </h3>
       <nav className="space-y-1">
@@ -23,8 +29,8 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
             onClick={() => onTabChange(tab.id)}
             className={`w-full rounded-lg px-3 py-2.5 text-left text-sm font-medium transition ${
               activeTab === tab.id
-                ? 'bg-indigo-500/20 text-indigo-400 ring-1 ring-indigo-500/30'
-                : 'text-zinc-400 hover:bg-white/5 hover:text-white'
+                ? 'bg-[#0066FF]/10 text-[#0066FF]'
+                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
             }`}
           >
             {tab.label}
