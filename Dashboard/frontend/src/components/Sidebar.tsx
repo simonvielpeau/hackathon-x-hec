@@ -1,4 +1,4 @@
-export type TabId = 'groupes' | 'parcours'
+export type TabId = 'accueil' | 'groupes' | 'parcours'
 
 interface SidebarProps {
   activeTab: TabId
@@ -7,6 +7,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const tabs: { id: TabId; label: string }[] = [
+    { id: 'accueil', label: 'Accueil' },
     { id: 'groupes', label: 'Groupes' },
     { id: 'parcours', label: 'Parcours client' },
   ]

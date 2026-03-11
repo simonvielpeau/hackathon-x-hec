@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useData } from './hooks/useData'
 import { Sidebar, type TabId } from './components/Sidebar'
+import { ViewAccueil } from './views/ViewAccueil'
 import { ViewGroupes } from './views/ViewGroupes'
 import { ViewParcoursClient } from './views/ViewParcoursClient'
 
 function App() {
   const { flat, verbatims, loading, error } = useData()
-  const [activeTab, setActiveTab] = useState<TabId>('groupes')
+  const [activeTab, setActiveTab] = useState<TabId>('accueil')
 
   if (loading) {
     return (
@@ -33,7 +34,15 @@ function App() {
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 overflow-auto p-8">
-        {activeTab === 'groupes' && <ViewGroupes flat={flat} verbatims={verbatims} />}
+        {activeTab === 'accueil' && (
+          <ViewAccueil
+            flat={flat}
+            onNavigateToView={setActiveTab}
+          />
+        )}
+        {activeTab === 'groupes' && (
+          <ViewGroupes flat={flat} verbatims={verbatims} />
+        )}
         {activeTab === 'parcours' && (
           <ViewParcoursClient flat={flat} verbatims={verbatims} />
         )}
