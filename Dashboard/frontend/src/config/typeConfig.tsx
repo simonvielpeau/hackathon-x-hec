@@ -54,31 +54,31 @@ export const TYPE_ORDER = [
 export const TYPE_CONFIG: Record<string, TypeConfig> = {
   'Irritant / Point de rupture': {
     label: 'Problème',
-    color: '#DC2626',
+    color: '#F87171',
     bgColor: 'bg-red-100',
     icon: <IconIrritant />,
   },
   'Élément apprécié / Coup de coeur': {
     label: 'Coup de cœur',
-    color: '#059669',
+    color: '#34D399',
     bgColor: 'bg-emerald-100',
     icon: <IconCoupDeCoeur />,
   },
   'Demande / Suggestion': {
     label: 'Suggestion',
-    color: '#2563EB',
+    color: '#60A5FA',
     bgColor: 'bg-blue-100',
     icon: <IconSuggestion />,
   },
   'Question récurrente': {
     label: 'Question',
-    color: '#7C3AED',
+    color: '#A78BFA',
     bgColor: 'bg-violet-100',
     icon: <IconQuestion />,
   },
   'Remarque neutre': {
     label: 'Neutre',
-    color: '#64748B',
+    color: '#94A3B8',
     bgColor: 'bg-slate-100',
     icon: <IconNeutre />,
   },

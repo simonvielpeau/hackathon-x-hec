@@ -1,6 +1,8 @@
 export interface ParcoursGroup {
   id: string
   label: string
+  /** Clé pour matcher avec les données (group dans data.json). Si absent, utilise label. */
+  dataGroup?: string
   tags: string[]
 }
 
@@ -21,6 +23,7 @@ export const PARCOURS_PHASES: ParcoursPhase[] = [
       {
         id: 'explorer',
         label: 'Explorer / Déclencher',
+        dataGroup: 'Explorer/Déclencher',
         tags: [
           'Publicité',
           'Communications ciblées',
@@ -108,6 +111,7 @@ export const PARCOURS_PHASES: ParcoursPhase[] = [
       {
         id: 'privileges-hm',
         label: 'Profiter des privilèges HM (Haute Mise)',
+        dataGroup: 'Profiter des privilèges HM',
         tags: [
           'Comptoir HM (haute mise)',
           'Salon HM',

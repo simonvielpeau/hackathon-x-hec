@@ -17,26 +17,29 @@ function TypeDistributionBar({
   const total = Object.values(distribution).reduce((a, b) => a + b, 0)
   if (total === 0) return null
 
+  const segments = TYPE_ORDER.filter((type) => (distribution[type] ?? 0) > 0).map(
+    (type) => {
+      const weight = distribution[type] ?? 0
+      const pct = (weight / total) * 100
+      const config = getTypeConfig(type)
+      return { type, pct, config }
+    }
+  )
+
   return (
-    <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+    <div className="mt-2 h-3.5 w-full overflow-hidden rounded-md bg-slate-100">
       <div className="flex h-full w-full">
-        {TYPE_ORDER.map((type) => {
-          const weight = distribution[type] ?? 0
-          const pct = (weight / total) * 100
-          if (weight <= 0) return null
-          const config = getTypeConfig(type)
-          return (
-            <div
-              key={type}
-              title={`${config.label}: ${weight.toLocaleString()}`}
-              style={{
-                width: `${pct}%`,
-                backgroundColor: config.color,
-              }}
-              className="h-full transition-all"
-            />
-          )
-        })}
+        {segments.map(({ type, pct, config }) => (
+          <div
+            key={type}
+            title={`${config.label}: ${(distribution[type] ?? 0).toLocaleString()}`}
+            style={{
+              width: `${pct}%`,
+              backgroundColor: config.color,
+            }}
+            className="h-full transition-all"
+          />
+        ))}
       </div>
     </div>
   )
@@ -60,19 +63,16 @@ const ArrowIcon = () => (
   </svg>
 )
 
-const PHASE_COLORS = [
-  '#0066FF', // Bleu Blumana - Anticipation
-  '#0EA5E9', // Approche
-  '#10B981', // Cœur (vert - jeu)
-  '#F59E0B', // Divertissement (ambre)
-  '#8B5CF6', // Séjour (violet)
-  '#64748B', // Conclusion (slate)
-]
+const SELECTED_CARD_COLOR = '#475569' // slate-600
 
 export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursClientProps) {
   const [selectedPhase, setSelectedPhase] = useState<string | null>(null)
   const [selectedGroup, setSelectedGroup] = useState<string | null>(null)
-  const [selectedTag, setSelectedTag] = useState<{ group: string; tag: string } | null>(null)
+  const [selectedTag, setSelectedTag] = useState<{
+    group: string
+    tag: string
+    dataGroup: string
+  } | null>(null)
 
   const selectedPhaseData = useMemo(
     () => PARCOURS_PHASES.find((p) => p.id === selectedPhase) ?? null,
@@ -108,19 +108,23 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
   const verbatimsForTag = useMemo(() => {
     if (!selectedTag) return []
     return verbatims
-      .filter((v) => v.group === selectedTag.group && v.tag === selectedTag.tag)
+      .filter(
+        (v) =>
+          v.group === selectedTag.dataGroup && v.tag === selectedTag.tag
+      )
       .sort((a, b) => b.weight - a.weight)
       .slice(0, 5)
   }, [verbatims, selectedTag])
 
-  const getTagCount = (groupLabel: string, tag: string) => {
-    const key = `${groupLabel}|${tag}`
+  const getTagCount = (group: ParcoursGroup, tag: string) => {
+    const dataGroup = getDataGroup(group)
+    const key = `${dataGroup}|${tag}`
     return tagCounts.get(key) ?? 0
   }
 
   const getGroupTotalCount = (group: ParcoursGroup) => {
     return group.tags.reduce(
-      (sum, tag) => sum + getTagCount(group.label, tag),
+      (sum, tag) => sum + getTagCount(group, tag),
       0
     )
   }
@@ -129,13 +133,16 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
     return groups.reduce((sum, g) => sum + getGroupTotalCount(g), 0)
   }
 
+  const getDataGroup = (group: ParcoursGroup) => group.dataGroup ?? group.label
+
   const getTypeDistribution = (
-    items: { label: string; tags: string[] }[]
+    items: ParcoursGroup[]
   ): Record<string, number> => {
     const dist: Record<string, number> = {}
     for (const item of items) {
+      const dataGroup = getDataGroup(item)
       for (const tag of item.tags) {
-        const key = `${item.label}|${tag}`
+        const key = `${dataGroup}|${tag}`
         const byType = typeWeightsByGroupTag.get(key)
         if (byType) {
           for (const [type, weight] of Object.entries(byType)) {
@@ -167,6 +174,26 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
         <p className="mt-1 text-slate-600">
           Sélectionnez une phase, puis un groupe, puis un tag pour explorer le parcours.
         </p>
+        <div className="mt-4 flex flex-wrap items-center gap-4 rounded-lg border border-slate-200 bg-slate-50/50 px-4 py-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Répartition des avis
+          </span>
+          {TYPE_ORDER.map((type) => {
+            const config = getTypeConfig(type)
+            return (
+              <span
+                key={type}
+                className="flex items-center gap-2 text-sm text-slate-700"
+              >
+                <span
+                  className="h-3 w-3 shrink-0 rounded-sm border border-slate-200"
+                  style={{ backgroundColor: config.color }}
+                />
+                {config.label}
+              </span>
+            )
+          })}
+        </div>
       </header>
 
       <div className="flex min-w-0 flex-col gap-6">
@@ -175,9 +202,8 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
               Ligne 1 — Phases principales
             </h2>
-            <div className="flex min-w-0 w-full items-center gap-1">
+            <div className="flex min-w-0 w-full items-stretch gap-1">
               {PARCOURS_PHASES.map((phase, index) => {
-                const color = PHASE_COLORS[index % PHASE_COLORS.length]
                 const isSelected = selectedPhase === phase.id
                 const totalCount = getPhaseTotalCount(phase.groups)
                 const phaseDistribution = getTypeDistribution(phase.groups)
@@ -191,23 +217,23 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                         <ArrowIcon />
                       </span>
                     )}
-                    <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex min-h-[5.5rem] min-w-0 flex-1 flex-col">
                       <button
                         type="button"
                         onClick={() => handlePhaseClick(phase.id)}
-                        className={`w-full rounded-lg px-4 py-2.5 text-left text-sm font-medium transition ${
+                        className={`flex w-full flex-1 flex-col rounded-lg px-4 py-2.5 text-left text-sm font-medium transition ${
                           isSelected
                             ? 'text-white shadow-md'
                             : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:text-slate-900'
                         }`}
-                        style={isSelected ? { backgroundColor: color } : undefined}
+                        style={isSelected ? { backgroundColor: SELECTED_CARD_COLOR } : undefined}
                       >
-                        <span className="block truncate font-semibold" title={phase.label}>
+                        <span className="line-clamp-2 font-semibold leading-tight" title={phase.label}>
                           {phase.label}
                         </span>
                         {totalCount > 0 && (
                           <span
-                            className={`text-xs ${isSelected ? 'opacity-90' : 'text-slate-500'}`}
+                            className={`mt-1 text-xs ${isSelected ? 'opacity-90' : 'text-slate-500'}`}
                           >
                             {totalCount.toLocaleString()} avis
                           </span>
@@ -226,26 +252,12 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Ligne 2 — Groupes
-                <span
-                  className="ml-2 font-normal normal-case"
-                  style={{
-                    color:
-                      PHASE_COLORS[
-                        PARCOURS_PHASES.findIndex((p) => p.id === selectedPhase) %
-                          PHASE_COLORS.length
-                      ],
-                  }}
-                >
+                <span className="ml-2 font-normal normal-case text-slate-600">
                   ({selectedPhaseData.label})
                 </span>
               </h2>
-              <div className="flex min-w-0 w-full items-center gap-1">
+              <div className="flex min-w-0 w-full items-stretch gap-1">
                 {selectedPhaseData.groups.map((group, index) => {
-                  const phaseColor =
-                    PHASE_COLORS[
-                      PARCOURS_PHASES.findIndex((p) => p.id === selectedPhase) %
-                        PHASE_COLORS.length
-                    ]
                   const isSelected = selectedGroup === group.id
                   const groupCount = getGroupTotalCount(group)
                   const groupDistribution = getTypeDistribution([group])
@@ -259,27 +271,27 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                           <ArrowIcon />
                         </span>
                       )}
-                      <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="flex min-h-[5.5rem] min-w-0 flex-1 flex-col">
                         <button
                           type="button"
                           onClick={() => handleGroupClick(group.id)}
-                          className={`w-full rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition ${
+                          className={`flex w-full flex-1 flex-col rounded-lg border px-4 py-2.5 text-left text-sm font-medium transition ${
                             isSelected
                               ? 'border-transparent text-white shadow-md'
                               : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                           }`}
                           style={
                             isSelected
-                              ? { backgroundColor: phaseColor }
+                              ? { backgroundColor: SELECTED_CARD_COLOR }
                               : undefined
                           }
                         >
-                          <span className="block truncate font-semibold" title={group.label}>
+                          <span className="line-clamp-2 font-semibold leading-tight" title={group.label}>
                             {group.label}
                           </span>
                           {groupCount > 0 && (
                             <span
-                              className={`text-xs ${isSelected ? 'opacity-90' : 'text-slate-500'}`}
+                              className={`mt-1 text-xs ${isSelected ? 'opacity-90' : 'text-slate-500'}`}
                             >
                               {groupCount.toLocaleString()} avis
                             </span>
@@ -305,37 +317,21 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Ligne 3 — Tags
-                <span
-                  className="ml-2 font-normal normal-case"
-                  style={{
-                    color:
-                      PHASE_COLORS[
-                        PARCOURS_PHASES.findIndex((p) => p.id === selectedPhase) %
-                          PHASE_COLORS.length
-                      ],
-                  }}
-                >
+                <span className="ml-2 font-normal normal-case text-slate-600">
                   ({selectedGroupData.label})
                 </span>
               </h2>
               <div className="grid min-w-0 w-full grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2">
                 {selectedGroupData.tags.map((tag) => {
-                  const phaseColor =
-                    selectedPhase
-                      ? PHASE_COLORS[
-                          PARCOURS_PHASES.findIndex((p) => p.id === selectedPhase) %
-                            PHASE_COLORS.length
-                        ]
-                      : '#64748B'
-                  const count = getTagCount(selectedGroupData.label, tag)
+                  const count = getTagCount(selectedGroupData, tag)
                   const isSelected =
                     selectedTag?.group === selectedGroupData.label &&
                     selectedTag?.tag === tag
                   const tagDistribution = getTypeDistribution([
-                    { label: selectedGroupData.label, tags: [tag] },
+                    { ...selectedGroupData, tags: [tag] },
                   ])
                   return (
-                    <div key={tag} className="flex min-w-0 flex-col">
+                    <div key={tag} className="flex min-h-[5.5rem] min-w-0 flex-col">
                       <button
                         type="button"
                         onClick={() =>
@@ -343,26 +339,30 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                             prev?.group === selectedGroupData.label &&
                             prev?.tag === tag
                               ? null
-                              : { group: selectedGroupData.label, tag }
+                              : {
+                                  group: selectedGroupData.label,
+                                  tag,
+                                  dataGroup: getDataGroup(selectedGroupData),
+                                }
                           )
                         }
-                        className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
+                        className={`flex w-full flex-1 flex-col rounded-lg border px-3 py-2 text-left text-sm transition ${
                           isSelected
                             ? 'border-transparent text-white shadow-md'
                             : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50'
                         }`}
                         style={
                           isSelected
-                            ? { backgroundColor: phaseColor }
+                            ? { backgroundColor: SELECTED_CARD_COLOR }
                             : undefined
                         }
                       >
-                        <span className="block truncate font-medium" title={tag}>
+                        <span className="line-clamp-2 font-medium leading-tight" title={tag}>
                           {tag}
                         </span>
                         {count > 0 && (
                           <span
-                            className={`text-xs ${isSelected ? 'opacity-90' : 'text-slate-500'}`}
+                            className={`mt-1 text-xs ${isSelected ? 'opacity-90' : 'text-slate-500'}`}
                           >
                             {count.toLocaleString()} avis
                           </span>
