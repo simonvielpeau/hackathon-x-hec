@@ -34,7 +34,9 @@ function App() {
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 overflow-auto p-8">
         {activeTab === 'groupes' && <ViewGroupes flat={flat} verbatims={verbatims} />}
-        {activeTab === 'parcours' && <ViewParcoursClient />}
+        {activeTab === 'parcours' && (
+          <ViewParcoursClient flat={flat} verbatims={verbatims} />
+        )}
       </main>
     </div>
   )
