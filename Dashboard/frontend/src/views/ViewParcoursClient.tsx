@@ -73,6 +73,9 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
     tag: string
     dataGroup: string
   } | null>(null)
+  const [selectedAvisTypeFilter, setSelectedAvisTypeFilter] = useState<
+    string | null
+  >(null)
 
   const selectedPhaseData = useMemo(
     () => PARCOURS_PHASES.find((p) => p.id === selectedPhase) ?? null,
@@ -113,8 +116,12 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
           v.group === selectedTag.dataGroup && v.tag === selectedTag.tag
       )
       .sort((a, b) => b.weight - a.weight)
-      .slice(0, 5)
   }, [verbatims, selectedTag])
+
+  const filteredVerbatims = useMemo(() => {
+    if (!selectedAvisTypeFilter) return verbatimsForTag
+    return verbatimsForTag.filter((v) => v.type === selectedAvisTypeFilter)
+  }, [verbatimsForTag, selectedAvisTypeFilter])
 
   const getTagCount = (group: ParcoursGroup, tag: string) => {
     const dataGroup = getDataGroup(group)
@@ -200,7 +207,7 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
           {/* Ligne 1 : Phases principales */}
           <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
             <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Ligne 1 — Phases principales
+              Parcours client général
             </h2>
             <div className="flex min-w-0 w-full items-stretch gap-1">
               {PARCOURS_PHASES.map((phase, index) => {
@@ -251,7 +258,7 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
           {selectedPhaseData ? (
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Ligne 2 — Groupes
+                Groupes spécifiques du parcours 
                 <span className="ml-2 font-normal normal-case text-slate-600">
                   ({selectedPhaseData.label})
                 </span>
@@ -316,7 +323,7 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
           {selectedGroupData ? (
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Ligne 3 — Tags
+                Tags spécifiques du groupe 
                 <span className="ml-2 font-normal normal-case text-slate-600">
                   ({selectedGroupData.label})
                 </span>
@@ -334,7 +341,7 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                     <div key={tag} className="flex min-h-[5.5rem] min-w-0 flex-col">
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
                           setSelectedTag((prev) =>
                             prev?.group === selectedGroupData.label &&
                             prev?.tag === tag
@@ -345,7 +352,8 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                                   dataGroup: getDataGroup(selectedGroupData),
                                 }
                           )
-                        }
+                          setSelectedAvisTypeFilter(null)
+                        }}
                         className={`flex w-full flex-1 flex-col rounded-lg border px-3 py-2 text-left text-sm transition ${
                           isSelected
                             ? 'border-transparent text-white shadow-md'
@@ -393,9 +401,60 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                   ({selectedTag.tag} — {selectedTag.group})
                 </span>
               </h2>
-              <div className="max-h-64 space-y-2 overflow-y-auto">
-                {verbatimsForTag.length > 0 ? (
-                  verbatimsForTag.map((v, i) => {
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-medium text-slate-500">
+                  Filtrer par type :
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAvisTypeFilter(null)}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                    selectedAvisTypeFilter === null
+                      ? 'bg-slate-200 text-slate-800'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  Tous ({verbatimsForTag.length})
+                </button>
+                {TYPE_ORDER.map((type) => {
+                  const config = getTypeConfig(type)
+                  const count = verbatimsForTag.filter(
+                    (v) => v.type === type
+                  ).length
+                  if (count === 0) return null
+                  return (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() =>
+                        setSelectedAvisTypeFilter((prev) =>
+                          prev === type ? null : type
+                        )
+                      }
+                      className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${
+                        selectedAvisTypeFilter === type
+                          ? 'text-white'
+                          : 'hover:opacity-90'
+                      }`}
+                      style={{
+                        backgroundColor:
+                          selectedAvisTypeFilter === type
+                            ? config.color
+                            : `${config.color}50`,
+                        color:
+                          selectedAvisTypeFilter === type
+                            ? '#0f172a'
+                            : config.color,
+                      }}
+                    >
+                      {config.label} ({count})
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="max-h-96 space-y-2 overflow-y-auto">
+                {filteredVerbatims.length > 0 ? (
+                  filteredVerbatims.map((v, i) => {
                     const config = getTypeConfig(v.type)
                     return (
                       <div
@@ -417,7 +476,11 @@ export function ViewParcoursClient({ flat = [], verbatims = [] }: ViewParcoursCl
                     )
                   })
                 ) : (
-                  <p className="text-sm text-slate-500">Aucun avis pour ce tag</p>
+                  <p className="text-sm text-slate-500">
+                    {verbatimsForTag.length > 0
+                      ? 'Aucun avis pour ce filtre'
+                      : 'Aucun avis pour ce tag'}
+                  </p>
                 )}
               </div>
             </div>

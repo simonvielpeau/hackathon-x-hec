@@ -77,7 +77,7 @@ export const PARCOURS_PHASES: ParcoursPhase[] = [
   },
   {
     id: 'coeur',
-    label: "Cœur de l'Expérience (Le Jeu)",
+    label: "Cœur de l'Expérience",
     description:
       "Il s'agit de l'activité principale liée aux jeux de hasard et d'argent (JHA) et à la gestion des gains.",
     groups: [
